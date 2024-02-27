@@ -26,21 +26,18 @@ passport.use(
   )
 );
 
-// request at /auth/google, when user click sign-up with google button transferring
-// the request to google server, to show emails screen
 router.get(
   "/",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-// URL Must be same as 'Authorized redirect URIs' field of OAuth client, i.e: /auth/google/callback
 router.get(
   "/callback",
   passport.authenticate("google", {
     failureRedirect: "/api/auth/google/error",
   }),
   (req, res) => {
-    res.redirect("/api/auth/google/success"); // Successful authentication, redirect success.
+    res.redirect("/api/auth/google/success");
   }
 );
 router.get("/success", async (req, res) => {

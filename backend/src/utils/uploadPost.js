@@ -1,15 +1,16 @@
 const Post = require("../model/Post");
 const User = require("../model/User");
 
-const posts = async (title, description, content) => {
+const posts = async (title, description, content, user, isDraft) => {
   const newPost = new Post({
     owner: user,
     content: {
-      public_id: content.public_id,
-      url: content.url,
+      public_id: content?.public_id,
+      url: content?.url,
     },
     title,
     description,
+    isDraft,
   });
 
   const post = await newPost.save();

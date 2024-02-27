@@ -23,4 +23,4 @@ const passportAuth = async (passport) => {
   );
 };
 
-module.exports ={passportAuth}
+module.exports = { passportAuth };

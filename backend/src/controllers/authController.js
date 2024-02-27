@@ -1,10 +1,10 @@
 const User = require("../model/User");
 const bcrypt = require("bcrypt");
 const asyncHandler = require("express-async-handler");
-const sendEmail = require("../utils/sendEmail");
-const crypto = require("crypto");
-const Token = require("../model/Token");
-const { BASE_URL, SESSION } = require("../config/serverConfig");
+// const sendEmail = require("../utils/sendEmail");
+// const crypto = require("crypto");
+// const Token = require("../model/Token");
+const { SESSION } = require("../config/serverConfig");
 
 // register //
 
@@ -39,13 +39,12 @@ const registration = asyncHandler(async (req, res) => {
     });
 
     const user = await newUser.save();
-    const token = await new Token({
-      userId: user._id,
-      token: crypto.randomBytes(32).toString("hex"),
-    }).save();
-    const url = `${BASE_URL}/users/${user._id}/verify/${token.token}`;
-    const response = await sendEmail(user.email, "Verify email", url);
-    console.log("sending send ", response);
+    // const token = await new Token({
+    //   userId: user._id,
+    //   token: crypto.randomBytes(32).toString("hex"),
+    // }).save();
+    // const url = `${BASE_URL}/users/${user._id}/verify/${token.token}`;
+    // const response = await sendEmail(user.email, "Verify email", url);
     res
       .status(200)
       .send({ message: "Congratulations on creating your new account" });
@@ -72,7 +71,7 @@ const login = asyncHandler(async (req, res) => {
       return res.status(402).send({ message: "Invalid password" });
     }
     //Send confirmation email//
-    let tokens = await Token.findOne({ userId: user._id });
+    // let tokens = await Token.findOne({ userId: user._id });
     // if (user.isVerified === "false") {
     //   if (tokens) {
     //     return res

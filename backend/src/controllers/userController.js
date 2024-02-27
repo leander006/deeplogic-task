@@ -2,7 +2,7 @@ const User = require("../model/User");
 const asyncHandler = require("express-async-handler");
 const Post = require("../model/Post");
 const { cloudinary } = require("../utils/cloudinary");
-const Token = require("../model/Token");
+// const Token = require("../model/Token");
 
 const bcrypt = require("bcrypt");
 const { SESSION } = require("../config/serverConfig");
@@ -183,16 +183,6 @@ const token = async (req, res) => {
     if (!user) {
       return res.status(400).send({ message: "Invalid link" });
     }
-    const token = await Token.findOne({
-      userId: user._id,
-      token: req.params.token,
-    });
-    if (!token) return res.status(401).send({ message: "Invalid link" });
-    const newUser = await User.findByIdAndUpdate(user._id, {
-      isVerified: true,
-    });
-
-    await Token.findByIdAndDelete(token._id);
 
     res.status(200).json(newUser);
   } catch (error) {

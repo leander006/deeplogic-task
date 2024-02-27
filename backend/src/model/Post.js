@@ -13,12 +13,14 @@ const PostSchema = new mongoose.Schema(
     title: {
       type: String,
       trim: true,
-      req: true,
     },
     description: {
       type: String,
       trim: true,
-      req: true,
+    },
+    isDraft: {
+      type: Boolean,
+      default: false,
     },
     likes: [
       {

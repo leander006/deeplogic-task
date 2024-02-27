@@ -5,7 +5,7 @@ const authenticate = (req, res, next) => {
     if (error) next(error);
     if (!user) {
       return res.status(404).json({
-        message: "Unauthorized access no token",
+        message: "Your token got expired login again",
       });
     }
     req.user = user;

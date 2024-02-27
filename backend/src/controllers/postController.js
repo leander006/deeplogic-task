@@ -6,11 +6,22 @@ const Like = require("../model/Like");
 const { cloudinary } = require("../utils/cloudinary");
 const { posts } = require("../utils/uploadPost");
 const schedule = require("node-schedule");
+const { hours, days, oneMonth, threeMonth } = require("../utils/data");
 
 const createPost = asyncHandler(async (req, res) => {
   const { title, description, content } = req.body;
+  let isDraft = false;
+  if (!title || !description || !content) {
+    isDraft = true;
+  }
   try {
-    const post = posts(title, description, content, req.user._id);
+    const post = await posts(
+      title,
+      description,
+      content,
+      req.user._id,
+      isDraft
+    );
     console.log(post);
     return res.status(200).json(post);
   } catch (error) {
@@ -33,36 +44,73 @@ const uploadPost = async (req, res) => {
 
 const schedulePost = async (req, res) => {
   const { title, description, content, date } = req.body;
+  const time = new Date(
+    date.year,
+    date.month - 1,
+    date.dayOfMonth,
+    date.hour,
+    date.minute
+  );
   try {
-    schedule.scheduleJob(date, () => {
-      console.log("hello");
+    schedule.scheduleJob(time, async () => {
+      const post = await posts(
+        title,
+        description,
+        content,
+        req.user._id,
+        false
+      );
+      console.log(post);
     });
+    console.log("done api call");
+    return res.status(200).json("Successfully scheduled your post");
   } catch (error) {
     return res.status(500).send(error);
   }
 };
 
-// Get post by id
-const particularPost = asyncHandler(async (req, res) => {
+const updatePost = asyncHandler(async (req, res) => {
+  const { title, description, content, id } = req.body;
+  const post = await Post.findById({ _id: id });
   try {
-    const post = await Post.findById(req.params.id).populate("owner");
-    res.status(200).json(post);
+    if (content) {
+      await cloudinary.uploader.destroy(content.public_id);
+    }
+    const newPost = await Post.findByIdAndUpdate(
+      id,
+      {
+        title: title ? title : post.title,
+        description: description ? description : post.description,
+        content: content ? content : post.content,
+        isDraft: false,
+      },
+      { new: true }
+    );
+    return res.status(200).json(newPost);
   } catch (error) {
-    res.status(404).send({ error: error.message });
+    return res.status(500).send({ error: error.message });
   }
 });
 
 // Get all post
 const getPost = asyncHandler(async (req, res) => {
   try {
-    const user = await User.find({ status: "Public" });
-    const users = user.map((u) => u._id);
-    const morePost = await Promise.all(
-      users.map((id) => {
-        return Post.find({ owner: id }).sort({ createdAt: -1 });
-      })
+    const post = await Post.find({ owner: req.user._id, isDraft: "true" }).sort(
+      {
+        createdAt: -1,
+      }
     );
-    res.status(200).json(morePost.flat());
+    res.status(200).json(post);
+  } catch (error) {
+    res.status(404).send({ error: error.message });
+  }
+});
+
+// Get post by id
+const particularPost = asyncHandler(async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id).populate("owner");
+    res.status(200).json(post);
   } catch (error) {
     res.status(404).send({ error: error.message });
   }
@@ -147,28 +195,23 @@ const likePost = asyncHandler(async (req, res) => {
   }
 });
 
-const bookmarkPost = asyncHandler(async (req, res) => {
+const data = async (req, res) => {
+  const id = req.params.id;
   try {
-    const user = await User.findById(req.user._id);
-    const bookmark = user.bookmarkedPost;
-    // Promise.all is use to get all post of user's following login user
-
-    const morePost = await Promise.all(
-      bookmark.map((id) => {
-        return (
-          Post.find({ _id: id })
-            .populate("owner")
-            // .populate({ path: "likes", populate: { path: "user" } })
-            // .populate({ path: "comments", populate: { path: "user" } })
-            .sort({ createdAt: -1 })
-        );
-      })
-    );
-    res.status(200).json(morePost.flat());
+    if (id == 1) {
+      return res.status(200).json({ data: hours, number: 23 });
+    } else if (id == 2) {
+      return res.status(200).json({ data: days, number: 90 });
+    } else if (id == 3) {
+      return res.status(200).json({ data: oneMonth, number: 150 });
+    } else {
+      return res.status(200).json({ data: threeMonth, number: 230 });
+    }
   } catch (error) {
-    res.status(404).send({ error: error.message });
+    console.log(error);
+    res.status(404).json(error);
   }
-});
+};
 
 //Post of bookmark
 
@@ -179,7 +222,8 @@ module.exports = {
   deletePost,
   followingPost,
   likePost,
-  bookmarkPost,
+  updatePost,
   uploadPost,
   schedulePost,
+  data,
 };
