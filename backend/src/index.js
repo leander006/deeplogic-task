@@ -27,7 +27,7 @@ mongoose
 
 app.use(
   cors({
-    origin: ["https://deeplogic-task.vercel.app/", "http://localhost:3000"],
+    origin: ["https://deeplogic-task.vercel.app", "http://localhost:3000"],
     methods: ["GET", "POST", "DELETE", "PUT"],
     credentials: true,
   })
