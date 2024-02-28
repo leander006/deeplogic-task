@@ -2,6 +2,10 @@
 - So repo is divided into 2 part
 - Frontend in react js
 - Backend in node js and express js
+  
+# Live demo 
+` https://deeplogic-task.vercel.app/ `
+
 # Initial setup
   # Frontend
   - cd frontend 
